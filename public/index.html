@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="styles.css">
+	<link rel="icon" href="assets/icon.png">
+	<title>Weblike</title>
+</head>
+
+<body>
+	<canvas id="canvas" width="300" height="300"></canvas>
+
+	<!-- LOAD IMAGES HERE -->
+	<div style="display:none;">
+		<img id="font" src="assets/font.png">
+		<img id="tilemap" src="assets/tiles.png">
+		<img id="ui" src="assets/UI.png">
+		<img id="player_character" src="assets/player_character.png">
+		<img id="slash" src="assets/slash.png">
+		<img id="merlock" src="assets/icon.png">
+	</div>
+
+	<!-- LOAD AUDIO HERE -->
+	<div style="display:none;">
+		<!--<audio id="bingbong" loop src="assets/BingBingBong.mp3" type="audio/mpeg">-->
+		<!--<audio id="walk" src="assets/audio/walk.wav" type="audio/wave">-->
+	</div>
+	
+	<script src="scripts/math/RNG.js"></script>
+	<script src="scripts/gamestate_manager.js"></script>
+	<script src="scripts/renderer.js"></script>
+	<script src="scripts/input_handler.js"></script>
+	<script src="scripts/floor.js"></script>
+	<script src="scripts/states/game_state.js"></script>
+	<script src="scripts/states/menu_state.js"></script>
+	<script src="scripts/states/play_state.js"></script>
+	<script src="scripts/entities/player.js"></script>
+	<script src="scripts/entities/enemy.js"></script>
+	<script src="scripts/game.js"></script>
+
+	<!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="/__/firebase/7.14.1/firebase-app.js"></script>
+	<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+	<script src="/__/firebase/7.14.1/firebase-analytics.js"></script>
+	<!-- Initialize Firebase -->
+	<script src="/__/firebase/init.js"></script>
+</body>
+
+</html>
