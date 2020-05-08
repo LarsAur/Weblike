@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  
+  firebase-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-node@master
+      with:
+        node-version: "12.x"
+    
+    - run: npm install
+    - run: npm build:prod
+    - uses: w9jds/firebase-action@v1.3.0
+      with:
+        args: deploy --only hosting
+      env: 
+        FIREBASE_TOKEN: ${{secrets.FIREBASE_TOKEN}}
