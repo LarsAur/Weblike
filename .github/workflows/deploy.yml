@@ -14,12 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
-    - uses: actions/setup-node@master
-      with:
-        node-version: "12.x"
-    
-    - run: npm install
-    - run: npm build:prod
+
     - uses: w9jds/firebase-action@v1.3.0
       with:
         args: deploy --only hosting
