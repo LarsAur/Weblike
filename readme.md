@@ -4,7 +4,7 @@ Weblike is a rougelike game you can play in the browser. The game can be played 
 
 ![Cover_image]
 
-[cover_image]: /cover_image.png
+[cover_image]: /cover_image.PNG
 
 ## The project
 
