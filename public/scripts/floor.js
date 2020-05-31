@@ -20,13 +20,26 @@ class Floor {
         this.enemies = []
         for (let i = 0; i < this.floor.length; i++) {
             for (let j = 0; j < this.floor[i].length; j++) {
-                if (spawnable_tiles.includes(this.floor[i][j])) {
+                if (spawnable_tiles.includes(this.floor[i][j]) && !this.is_tile_in_spawn_room(i, j)) {
                     if (this.RNG.next_float() > 0.98) {
                         this.enemies.push(new Enemy(i, j, this))
                     }
                 }
             }
         }
+    }
+
+    is_tile_in_spawn_room(x, y){
+        return x >= 24 && x <= 32 && y >= 24 && y <= 32 // Includes the spawn room doors
+    }
+
+    tile_contains_enemy(x, y){
+        for(let e of this.enemies){
+            if(e.x == x && e.y == y){
+                return true
+            }
+        }
+        return false
     }
 
     move_enemies_towards(x, y) {
@@ -50,7 +63,8 @@ class Floor {
             }else{
                 e.agro_timer -= 1
             }
-            if(e.agro_timer > 0){
+            //Move is enemy has agro and is not already close to the player
+            if(e.agro_timer > 0 && this.distance_map[e.x][e.y] != 1){ 
                 let available_moves = []
                 let d = this.distance_map[e.x][e.y]
                 // Find empty closer spaces
@@ -143,7 +157,6 @@ class Floor {
                         this.floor[i][j] = "h1"
                     }
                 }
-
             }
         }
 

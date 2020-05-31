@@ -26,6 +26,7 @@ class PlayState extends GameState {
 
         this.center_camera_on_player()
         this.tick_timer = 0
+        this.time_step = 0 // Increases by 1 for each tick
     }
 
     center_camera_on_player() {
@@ -77,28 +78,51 @@ class PlayState extends GameState {
             }
         }
 
+        var enemy_animation_step = Math.floor(this.time_step / 30) % 2
         for (let enemy of this.floor.enemies) {
-            this.renderer.draw_character(this.renderer.merlock, undefined, 0, enemy.x * this.tile_size + this.offsetx, enemy.y * this.tile_size + this.offsety)
+            //Render an enemy param: sprite_sheet, direction, timestep (for animation), xpos (in pixles), ypos (in pixels) 
+            this.renderer.draw_character(this.renderer.merlock, undefined, enemy_animation_step, enemy.x * this.tile_size + this.offsetx, enemy.y * this.tile_size + this.offsety)
         }
 
+        this.time_step += 1
         this.tick_timer += 0.03
         if (this.tick_timer >= 1) {
             this.tick_timer %= 1
             this.on_tick_timer()
         }
 
-        this.renderer.draw_character(this.renderer.player_character, this.player.direction, 0, this.player.x * this.tile_size + this.offsetx, this.player.y * this.tile_size + this.offsety)
+        //Render a the player param: sprite_sheet, direction, animation_step, xpos (in pixles), ypos (in pixels)
+        var player_animation_step = Math.floor(this.time_step / 20) % 3
+        this.renderer.draw_character(this.renderer.player_character, this.player.direction, player_animation_step, this.player.x * this.tile_size + this.offsetx, this.player.y * this.tile_size + this.offsety)
 
-        this.renderer.draw_fog()
+        this.renderer.draw_fog(this.time_step)
 
         this.renderer.draw_ui_element("inventory", 0, 250)
         this.renderer.draw_ui_element("time_bar", 286, 257)
         this.renderer.draw_rect(288, 290, 3, -30 * this.tick_timer)
-
-
+        this.renderer.draw_ui_element("health_container", 6, 256)
+        for(let i = 0; i < this.player.MAX_HEALTH; i+=2){
+            let x = 8 + 4 * (i%(this.player.MAX_HEALTH/2))
+            let y = 258 + 8*Math.floor(i / (this.player.MAX_HEALTH/2))
+            if(this.player.health >= i + 2){
+                this.renderer.draw_ui_element("full_heart", x, y)
+            }else if(this.player.health == i + 1){
+                this.renderer.draw_ui_element("half_heart", x, y)
+            }else{
+                this.renderer.draw_ui_element("empty_heart", x, y)
+            }
+        }
     }
 
     on_tick_timer() {
+        //Deal damage to player
+        if(this.floor.tile_contains_enemy(this.player.x + 1, this.player.y)) this.player.health -= 1
+        if(this.floor.tile_contains_enemy(this.player.x - 1, this.player.y)) this.player.health -= 1
+        if(this.floor.tile_contains_enemy(this.player.x, this.player.y + 1)) this.player.health -= 1
+        if(this.floor.tile_contains_enemy(this.player.x, this.player.y - 1)) this.player.health -= 1
+
+        console.log(this.player.health)
+
         this.floor.move_enemies_towards(this.player.x, this.player.y)
     }
 

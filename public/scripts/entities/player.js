@@ -8,6 +8,8 @@ class Player {
         this.y = y
         this.floor = floor
         this.input_handler = input_handler
+        this.MAX_HEALTH = 16
+        this.health = this.MAX_HEALTH
 
         this.attack_timer = 0
         this.attack_position = [0, 0]
@@ -23,13 +25,14 @@ class Player {
     reset() {
         this.x = this.start_x
         this.y = this.start_y
+        this.health = this.MAX_HEALTH
     }
 
     tick() {
         const walkable_tiles = ["n1", "n2"]
         if (this.input_handler.is_key_pressed("s")) {
             if (this.direction == "down") {
-                if (walkable_tiles.includes(this.floor.get(this.x, this.y + 1))) {
+                if (walkable_tiles.includes(this.floor.get(this.x, this.y + 1)) && !this.floor.tile_contains_enemy(this.x, this.y + 1)) {
                     this.y += 1
                 }
             }
@@ -38,7 +41,7 @@ class Player {
 
         if (this.input_handler.is_key_pressed("w")) {
             if (this.direction == "up") {
-                if (walkable_tiles.includes(this.floor.get(this.x, this.y - 1))) {
+                if (walkable_tiles.includes(this.floor.get(this.x, this.y - 1)) && !this.floor.tile_contains_enemy(this.x, this.y - 1)) {
                     this.y -= 1
                 }
             }
@@ -47,7 +50,7 @@ class Player {
 
         if (this.input_handler.is_key_pressed("a")) {
             if (this.direction == "left") {
-                if (walkable_tiles.includes(this.floor.get(this.x - 1, this.y))) {
+                if (walkable_tiles.includes(this.floor.get(this.x - 1, this.y)) && !this.floor.tile_contains_enemy(this.x - 1, this.y)) {
                     this.x -= 1
                 }
             }
@@ -56,7 +59,7 @@ class Player {
 
         if (this.input_handler.is_key_pressed("d")) {
             if (this.direction == "right") {
-                if (walkable_tiles.includes(this.floor.get(this.x + 1, this.y))) {
+                if (walkable_tiles.includes(this.floor.get(this.x + 1, this.y)) && !this.floor.tile_contains_enemy(this.x + 1, this.y)) {
                     this.x += 1
                 }
             }
