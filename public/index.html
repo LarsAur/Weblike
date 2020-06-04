@@ -18,7 +18,7 @@
 		<img id="tilemap" src="assets/tiles.png">
 		<img id="ui" src="assets/UI.png">
 		<img id="player_character" src="assets/player_character.png">
-		<img id="slash" src="assets/slash.png">
+		<img id="effects" src="assets/effects.png">
 		<img id="merlock" src="assets/merlock.png">
 	</div>
 
@@ -26,12 +26,19 @@
 	<div style="display:none;">
 		<!--<audio id="bingbong" loop src="assets/BingBingBong.mp3" type="audio/mpeg">-->
 		<!--<audio id="walk" src="assets/audio/walk.wav" type="audio/wave">-->
+		<audio id="hit_1" src="assets/audio/hit_1.wav" type="audio/wave">
+		<audio id="hit_2" src="assets/audio/hit_2.wav" type="audio/wave">
+		<audio id="death_1" src="assets/audio/death_1.wav" type="audio/wave">
+		<audio id="death_2" src="assets/audio/death_2.wav" type="audio/wave">
+		<audio id="miss_1" src="assets/audio/miss_1.wav" type="audio/wave">
+		<audio id="miss_2" src="assets/audio/miss_2.wav" type="audio/wave">
 	</div>
 	
 	<script src="scripts/math/RNG.js"></script>
 	<script src="scripts/gamestate_manager.js"></script>
 	<script src="scripts/renderer.js"></script>
 	<script src="scripts/input_handler.js"></script>
+	<script src="scripts/audio_manager.js"></script>
 	<script src="scripts/floor.js"></script>
 	<script src="scripts/states/game_state.js"></script>
 	<script src="scripts/states/menu_state.js"></script>

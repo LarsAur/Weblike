@@ -1,9 +1,19 @@
 class Enemy{
-    constructor(x, y, floor){
+    constructor(x, y, floor, audio_manager){
         this.x = x
         this.y = y
         this.floor = floor
+        this.audio_manager = audio_manager
+        this.health = 5
         this.agro_timer = 0
+    }
+
+    on_damaged(dmg){
+        this.health -= dmg
+    }
+
+    on_death(){
+        this.audio_manager.play("death")
     }
 
     tick(){

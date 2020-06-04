@@ -1,9 +1,10 @@
 class GameState{
 
-    constructor(gamestate_manager, renderer, input_handler){
+    constructor(gamestate_manager, renderer, input_handler, audio_manager){
         this.gamestate_manager = gamestate_manager
         this.renderer = renderer
         this.input_handler = input_handler
+        this.audio_manager = audio_manager
     }
 
     on_enter(data){

@@ -13,7 +13,7 @@ class PlayState extends GameState {
         this.canvas_size = 300
         this.view_height = 250
 
-        this.floor = new Floor(this.floor_size, this.room_size, this.RNG.next_float())
+        this.floor = new Floor(this.floor_size, this.room_size, this.RNG.next_float(), this.audio_manager)
         this.floor.generate_floor()
         this.floor.populate()
 
@@ -21,7 +21,9 @@ class PlayState extends GameState {
             (this.room_size - 1) * this.floor_size / 2,
             (this.room_size - 1) * this.floor_size / 2,
             this.floor,
-            this.input_handler
+            this.input_handler,
+            this.renderer,
+            this.audio_manager
         )
 
         this.center_camera_on_player()
@@ -85,7 +87,7 @@ class PlayState extends GameState {
         }
 
         this.time_step += 1
-        this.tick_timer += 0.03
+        this.tick_timer += 0.02
         if (this.tick_timer >= 1) {
             this.tick_timer %= 1
             this.on_tick_timer()
@@ -112,6 +114,8 @@ class PlayState extends GameState {
                 this.renderer.draw_ui_element("empty_heart", x, y)
             }
         }
+
+        this.renderer.draw_effects(this.offsetx, this.offsety)
     }
 
     on_tick_timer() {
@@ -120,8 +124,6 @@ class PlayState extends GameState {
         if(this.floor.tile_contains_enemy(this.player.x - 1, this.player.y)) this.player.health -= 1
         if(this.floor.tile_contains_enemy(this.player.x, this.player.y + 1)) this.player.health -= 1
         if(this.floor.tile_contains_enemy(this.player.x, this.player.y - 1)) this.player.health -= 1
-
-        console.log(this.player.health)
 
         this.floor.move_enemies_towards(this.player.x, this.player.y)
     }

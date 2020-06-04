@@ -32,7 +32,7 @@ class RNG {
         return start + Math.floor(randomUnder1 * rangeSize);
     }
 
-    choice(array) {
+    choose(array) {
         return array[this.next_range(0, array.length)];
     }
 

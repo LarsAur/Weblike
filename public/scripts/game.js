@@ -14,9 +14,10 @@ class Game {
         this.gamestate_manager = new GamestateManager()
         this.renderer = new Renderer()
         this.input_handler = new InputHandler()
+        this.audio_manager = new AudioManager()
 
-        this.menu_state = new MenuState(this.gamestate_manager, this.renderer, this.input_handler)
-        this.play_state = new PlayState(this.gamestate_manager, this.renderer, this.input_handler)
+        this.menu_state = new MenuState(this.gamestate_manager, this.renderer, this.input_handler, this.audio_manager)
+        this.play_state = new PlayState(this.gamestate_manager, this.renderer, this.input_handler, this.audio_manager)
 
         this.gamestate_manager.register_gamestate("menu", this.menu_state)
         this.gamestate_manager.register_gamestate("play", this.play_state)

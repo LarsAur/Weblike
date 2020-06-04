@@ -12,10 +12,16 @@ class Renderer {
         this.font = document.getElementById("font")
         this.tilemap = document.getElementById("tilemap")
         this.ui_elements = document.getElementById("ui")
+        this.effects = document.getElementById("effects")
 
         this.player_character = document.getElementById("player_character")
-        this.slash = document.getElementById("slash")
         this.merlock = document.getElementById("merlock")
+
+        this.effects_map = new Map()
+        this.effects_map.set("slash_up", {frame_delay: 2, steps: [{ x: 0, y: 0, w: 16, h: 16 }, { x: 0, y: 16, w: 16, h: 16 }]})
+        this.effects_map.set("slash_down", {frame_delay: 2, steps: [{ x: 16, y: 0, w: 16, h: 16 }, { x: 16, y: 16, w: 16, h: 16 }]})
+        this.effects_map.set("slash_right", {frame_delay: 2, steps: [{ x: 32, y: 0, w: 16, h: 16 }, { x: 32, y: 16, w: 16, h: 16 }]})
+        this.effects_map.set("slash_left", {frame_delay: 2, steps: [{ x: 48, y: 0, w: 16, h: 16 }, { x: 48, y: 16, w: 16, h: 16 }]})
 
         this.ui_map = new Map()
         this.ui_map.set("arrow", { x: 0, y: 0, w: 3, h: 5 })
@@ -25,6 +31,8 @@ class Renderer {
         this.ui_map.set("half_heart", { x: 16, y: 19, w: 7, h: 6 })
         this.ui_map.set("full_heart", { x: 24, y: 19, w: 7, h: 6 })
         this.ui_map.set("health_container", { x: 8, y: 0, w: 35, h: 18 })
+
+        this.effects_to_render = [] // {Effects_map_key, x, y, frame_count}
     }
 
     clear() {
@@ -71,8 +79,32 @@ class Renderer {
         }
     }
 
-    draw_slash(dir, x, y) {
-        this.ctx.drawImage(this.slash, this.direction_to_animation.get(dir) * 16, 0, 16, 16, x, y, 16, 16)
+    add_effect(key, x, y){
+        // effect_map_key, x, y (world coords), frames since effect started 
+        // world coords means camera moves the effect, but it is not based on tiles
+        this.effects_to_render.push({map_key: key, x: x, y: y, frame_count: 0})
+    }
+
+    draw_effects(offsetx, offsety){
+        let ended_animations = []
+        for(let i = 0; i < this.effects_to_render.length; i++){                                       // loops through each effect and render their respective animation
+            let effect = this.effects_to_render[i] 
+            let frame_delay = this.effects_map.get(effect.map_key).frame_delay      // timedelay between each animation step
+            let frame_count = effect.frame_count                                    // number of frames since start of effect
+            let animation_step = Math.floor(frame_count / frame_delay)              // animation_step
+            let frame = this.effects_map.get(effect.map_key).steps[animation_step]  // clipping of frame to be rendered
+            
+            this.ctx.drawImage(this.effects, frame.x, frame.y, frame.w, frame.h, effect.x + offsetx, effect.y + offsety, frame.w, frame.h)
+            effect.frame_count += 1
+            // If animation is finished: queue for removal
+            if(frame_delay * this.effects_map.get(effect.map_key).steps.length <= effect.frame_count){
+                ended_animations.push(i)
+            }
+        }
+        // Remove ended animations
+        for(let i = ended_animations.length - 1; i >= 0; i--){ // iterate backwards to not alter the index while removing
+            this.effects_to_render.splice(ended_animations[i], 1)
+        }
     }
 
     draw_rect(x, y, w, h) {

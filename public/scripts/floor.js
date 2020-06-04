@@ -1,10 +1,11 @@
 class Floor {
 
-    constructor(floor_size, room_size, seed) {
+    constructor(floor_size, room_size, seed, audio_manager) {
         this.floor_size = floor_size
         this.room_size = room_size
         this.floor = []
         this.RNG = new RNG(seed)
+        this.audio_manager = audio_manager
         this.enemies = []
         this.distance_map = undefined
 
@@ -22,7 +23,7 @@ class Floor {
             for (let j = 0; j < this.floor[i].length; j++) {
                 if (spawnable_tiles.includes(this.floor[i][j]) && !this.is_tile_in_spawn_room(i, j)) {
                     if (this.RNG.next_float() > 0.98) {
-                        this.enemies.push(new Enemy(i, j, this))
+                        this.enemies.push(new Enemy(i, j, this, this.audio_manager))
                     }
                 }
             }
@@ -36,6 +37,22 @@ class Floor {
     tile_contains_enemy(x, y){
         for(let e of this.enemies){
             if(e.x == x && e.y == y){
+                return true
+            }
+        }
+        return false
+    }
+
+    //Hits an enemy at a location if there is an enemy at that location, returns true or false depending on hit or not
+    hit_enemy_at(x, y, dmg){
+        for(let i = 0; i < this.enemies.length; i++){
+            let  e = this.enemies[i]
+            if(e.x == x && e.y == y){
+                e.on_damaged(dmg)
+                if(e.health <= 0){
+                    e.on_death()
+                    this.enemies.splice(i, 1)
+                }
                 return true
             }
         }
@@ -74,7 +91,7 @@ class Floor {
                 if (d > this.distance_map[e.x][e.y - 1] && !is_enemy_on(e.x, e.y - 1)) available_moves.push([e.x, e.y - 1])
                 // Choose an available space
                 if (available_moves.length > 0) {
-                    let np = random.choice(available_moves)
+                    let np = random.choose(available_moves)
                     e.x = np[0]
                     e.y = np[1]
                 }
