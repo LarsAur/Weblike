@@ -53,21 +53,13 @@ class PlayState extends GameState {
         this.player.tick()
         this.center_camera_on_player()
 
-        let letter_to_tile_index = new Map()
-        letter_to_tile_index.set("h1", 1)
-        letter_to_tile_index.set("h2", 4)
-        letter_to_tile_index.set("v", 0)
-        letter_to_tile_index.set("n1", 2)
-        letter_to_tile_index.set("n2", 5)
-        letter_to_tile_index.set("r", 3)
-
         for (let x = 0; x < this.floor_size * this.room_size; x++) {
             for (let y = 0; y < this.floor_size * this.room_size; y++) {
                 // Only redering things inside the canvas
                 if (this.floor.get(x, y)) {
                     if (x * this.tile_size + this.offsetx >= -this.tile_size && x * this.tile_size + this.offsetx < this.canvas_size + this.tile_size) {
                         if (y * this.tile_size + this.offsety >= -this.tile_size && y * this.tile_size + this.offsety < this.view_height) {
-                            this.renderer.draw_tile(letter_to_tile_index.get(this.floor.get(x, y)), x * this.tile_size + this.offsetx, y * this.tile_size + this.offsety)
+                            this.renderer.draw_tile(this.floor.get(x, y).get_tile_sprite_index(), x * this.tile_size + this.offsetx, y * this.tile_size + this.offsety)
 
                             /*if(this.floor.distance_map){
                                 if(this.floor.distance_map[x][y] !== Infinity){

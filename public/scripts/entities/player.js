@@ -32,27 +32,26 @@ class Player {
 
     tick() {
         // Player walking
-        const walkable_tiles = ["n1", "n2"]
         if (this.input_handler.is_key_pressed("s")) {
-            if (walkable_tiles.includes(this.floor.get(this.x, this.y + 1)) && !this.floor.tile_contains_enemy(this.x, this.y + 1)) {
+            if (this.floor.get(this.x, this.y + 1).is_walkable() && !this.floor.tile_contains_enemy(this.x, this.y + 1)) {
                 this.y += 1
             }
             this.direction = "down"
         }
         if (this.input_handler.is_key_pressed("w")) {
-            if (walkable_tiles.includes(this.floor.get(this.x, this.y - 1)) && !this.floor.tile_contains_enemy(this.x, this.y - 1)) {
+            if (this.floor.get(this.x, this.y - 1).is_walkable() && !this.floor.tile_contains_enemy(this.x, this.y - 1)) {
                 this.y -= 1
             }
             this.direction = "up"
         }
         if (this.input_handler.is_key_pressed("a")) {
-            if (walkable_tiles.includes(this.floor.get(this.x - 1, this.y)) && !this.floor.tile_contains_enemy(this.x - 1, this.y)) {
+            if (this.floor.get(this.x - 1, this.y).is_walkable() && !this.floor.tile_contains_enemy(this.x - 1, this.y)) {
                 this.x -= 1
             }
             this.direction = "left"
         }
         if (this.input_handler.is_key_pressed("d")) {
-            if (walkable_tiles.includes(this.floor.get(this.x + 1, this.y)) && !this.floor.tile_contains_enemy(this.x + 1, this.y)) {
+            if (this.floor.get(this.x + 1, this.y).is_walkable() && !this.floor.tile_contains_enemy(this.x + 1, this.y)) {
                 this.x += 1
             }
             this.direction = "right"
@@ -83,21 +82,5 @@ class Player {
             if(this.floor.hit_enemy_at(this.x + 1, this.y, 1)){this.audio_manager.play("hit")}
             else{this.audio_manager.play("miss")}
         }
-
-        // Attack on pressing Space
-        this.attack_timer -= 1
-        if (this.input_handler.is_key_pressed("Space")) {
-            if (this.attack_timer == 0) {
-                this.attack_timer = 2
-                this.attack_direction = this.direction
-                this.attack_position = [this.x, this.y]
-
-            }
-        }
-
-    }
-
-    move() {
-
     }
 }

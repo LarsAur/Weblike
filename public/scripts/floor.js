@@ -4,6 +4,7 @@ class Floor {
         this.floor_size = floor_size
         this.room_size = room_size
         this.floor = []
+        this.rooms = []
         this.RNG = new RNG(seed)
         this.audio_manager = audio_manager
         this.enemies = []
@@ -16,12 +17,15 @@ class Floor {
         return this.floor[x][y]
     }
 
+    get_room(rx, ry){
+        return this.rooms[rx][ry]
+    }
+
     populate() {
-        const spawnable_tiles = ["n1", "n2"]
         this.enemies = []
         for (let i = 0; i < this.floor.length; i++) {
             for (let j = 0; j < this.floor[i].length; j++) {
-                if (spawnable_tiles.includes(this.floor[i][j]) && !this.is_tile_in_spawn_room(i, j)) {
+                if (this.floor[i][j] && this.floor[i][j].is_walkable() && !this.is_tile_in_spawn_room(i, j)) {
                     if (this.RNG.next_float() > 0.98) {
                         this.enemies.push(new Enemy(i, j, this, this.audio_manager))
                     }
@@ -30,13 +34,13 @@ class Floor {
         }
     }
 
-    is_tile_in_spawn_room(x, y){
+    is_tile_in_spawn_room(x, y) {
         return x >= 24 && x <= 32 && y >= 24 && y <= 32 // Includes the spawn room doors
     }
 
-    tile_contains_enemy(x, y){
-        for(let e of this.enemies){
-            if(e.x == x && e.y == y){
+    tile_contains_enemy(x, y) {
+        for (let e of this.enemies) {
+            if (e.x == x && e.y == y) {
                 return true
             }
         }
@@ -44,12 +48,12 @@ class Floor {
     }
 
     //Hits an enemy at a location if there is an enemy at that location, returns true or false depending on hit or not
-    hit_enemy_at(x, y, dmg){
-        for(let i = 0; i < this.enemies.length; i++){
-            let  e = this.enemies[i]
-            if(e.x == x && e.y == y){
+    hit_enemy_at(x, y, dmg) {
+        for (let i = 0; i < this.enemies.length; i++) {
+            let e = this.enemies[i]
+            if (e.x == x && e.y == y) {
                 e.on_damaged(dmg)
-                if(e.health <= 0){
+                if (e.health <= 0) {
                     e.on_death()
                     this.enemies.splice(i, 1)
                 }
@@ -62,8 +66,8 @@ class Floor {
     move_enemies_towards(x, y) {
         let random = new RNG()
         const is_enemy_on = (x, y) => {
-            for(let e of this.enemies){
-                if(e.x == x && e.y == y){
+            for (let e of this.enemies) {
+                if (e.x == x && e.y == y) {
                     return true
                 }
             }
@@ -75,13 +79,13 @@ class Floor {
         this.enemies.sort((a, b) => this.distance_map[a.x][a.y] - this.distance_map[b.x][b.y])
         // Move enemies closer        
         for (let e of this.enemies) {
-            if(this.is_line_between(e.x, e.y, x, y, this.room_size)){
+            if (this.is_line_between(e.x, e.y, x, y, this.room_size)) {
                 e.agro_timer = 3
-            }else{
+            } else {
                 e.agro_timer -= 1
             }
             //Move is enemy has agro and is not already close to the player
-            if(e.agro_timer > 0 && this.distance_map[e.x][e.y] != 1){ 
+            if (e.agro_timer > 0 && this.distance_map[e.x][e.y] != 1) {
                 let available_moves = []
                 let d = this.distance_map[e.x][e.y]
                 // Find empty closer spaces
@@ -95,7 +99,7 @@ class Floor {
                     e.x = np[0]
                     e.y = np[1]
                 }
-            }            
+            }
         }
     }
 
@@ -117,6 +121,9 @@ class Floor {
         for (let i = 0; i < num_rooms; i++) {
             let slot_index = this.RNG.next_range(0, open_slots.length)
             let blueprint = this.RNG.next_range(0, this.room_blueprints.length)
+            if (i == 0) {
+                blueprint = 0  // first room is an empty room
+            }
             let slot = open_slots.splice(slot_index, 1)[0] // removes 1 element at slot_index
             used_slots.push(slot)
 
@@ -128,50 +135,21 @@ class Floor {
                     var x = slot[0] * (this.room_size - 1) + j // room_size - 1 create overlap between walls
                     var y = slot[1] * (this.room_size - 1) + k
 
-                    // first room is an empty room
-                    if (i == 0) {
-                        this.floor[x][y] = this.room_blueprints[0][k][j]
-                        continue
-                    }
-
                     // Add doors between every room
                     // Checks if the current tile is in the middle of a wall and if there is a wall (tile) there already, there is a room on the other side
                     if (((j == Math.floor(this.room_size / 2) && (k == 0 || k == this.room_size - 1)) || (k == Math.floor(this.room_size / 2) && (j == 0 || j == this.room_size - 1))) && this.floor[x][y]) {
-                        this.floor[x][y] = "n"
+                        this.floor[x][y] = new GroundTile(x, y, this, this.RNG.next_float())
                         continue
                     }
 
-                    this.floor[x][y] = this.room_blueprints[blueprint][k][j]
-                }
-            }
-        }
-
-        // Fix artifacts
-        for (let i = 0; i < this.floor.length; i++) {
-            for (let j = 0; j < this.floor[i].length; j++) {
-                // Horizontal walls turned to vertical walls if there is no tile under or tile is empty
-                if (this.floor[i][j] == "h" && (this.floor[i][j + 1] == "n" || this.floor[i][j + 1] === undefined)) {
-                    this.floor[i][j] = "v"
-                }
-            }
-        }
-
-        //Handle random tiles
-        for (let i = 0; i < this.floor.length; i++) {
-            for (let j = 0; j < this.floor[i].length; j++) {
-                if (this.floor[i][j] == "n") {
-                    if (this.RNG.next_float() > 0.9) {
-                        this.floor[i][j] = "n1"
-                    } else {
-                        this.floor[i][j] = "n2"
-                    }
-                }
-
-                if (this.floor[i][j] == "h") {
-                    if (this.RNG.next_float() > 0.99) {
-                        this.floor[i][j] = "h2"
-                    } else {
-                        this.floor[i][j] = "h1"
+                    // Creates all tile instances 
+                    switch (this.room_blueprints[blueprint][k][j]) {
+                        case "n": this.floor[x][y] = new GroundTile(x, y, this, this.RNG.next_float())
+                            break
+                        case "w": this.floor[x][y] = new WallTile(x, y, this, this.RNG.next_float())
+                            break
+                        case "r": this.floor[x][y] = new RockTile(x, y, this)
+                            break
                     }
                 }
             }
@@ -194,7 +172,6 @@ class Floor {
     }
 
     generate_distance_map(player_x, player_y) {
-        const walkable_tiles = ["n1", "n2"]
         this.distance_map = []
         for (let x = 0; x < this.room_size * this.floor_size; x++) {
             this.distance_map[x] = []
@@ -209,7 +186,7 @@ class Floor {
         this.distance_map[player_x][player_y] = 0
 
         const try_add_to_queue_with_distance = (x, y, d) => {
-            if (walkable_tiles.includes(this.floor[x][y]) && this.distance_map[x][y] === Infinity) {
+            if (this.floor[x][y].is_walkable() && this.distance_map[x][y] === Infinity) {
                 this.distance_map[x][y] = d
                 queue.push([x, y, d])
             }
@@ -228,8 +205,8 @@ class Floor {
     }
 
     // Implementation of bresenhams line algorithem
+    // Max_distance is compared to the euclidean disatance between to tiles
     is_line_between(x1, y1, x2, y2, max_distance) {
-        const wall_tiles = ["h1", "h2", "v"]
         let dx = Math.abs(x2 - x1)
         let dy = -Math.abs(y2 - y1)
         let sx = Math.sign(x2 - x1)
@@ -241,7 +218,7 @@ class Floor {
         }
 
         while (true) {
-            if (wall_tiles.includes(this.floor[x1][y1])) {
+            if (!this.floor[x1][y1].is_see_through()) {
                 return false
             }
             if (x1 == x2 && y1 == y2) {
@@ -260,54 +237,53 @@ class Floor {
     }
 
     //n = "nothing" (1, 2)
-    //h = "horizontal_wall" (1, 2)
-    //v = "vertical_wall"
+    //w = "wall"
     //r = "rock"
 
     room_blueprints = [
         [// Empty room
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
         ],
         [//Empty room with center pillar
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "h", "h", "h", "n", "n", "h"],
-            ["h", "n", "n", "h", "h", "h", "n", "n", "h"],
-            ["h", "n", "n", "v", "v", "v", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "w", "w", "w", "n", "n", "w"],
+            ["w", "n", "n", "w", "w", "w", "n", "n", "w"],
+            ["w", "n", "n", "w", "w", "w", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
         ],
         [// Corner wall
-            ["h", "h", "v", "v", "v", "v", "v", "h", "h"],
-            ["h", "v", "n", "n", "n", "n", "n", "v", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "h", "n", "n", "n", "n", "n", "h", "h"],
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
+            ["w", "w", "n", "n", "n", "n", "n", "w", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "w", "n", "n", "n", "n", "n", "w", "w"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
         ],
         [// Stone room
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
-            ["h", "r", "r", "n", "n", "n", "n", "n", "h"],
-            ["h", "r", "r", "n", "n", "n", "n", "n", "h"],
-            ["h", "r", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "n", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "r", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "r", "h"],
-            ["h", "n", "n", "n", "n", "n", "n", "r", "h"],
-            ["h", "v", "v", "v", "v", "v", "v", "v", "h"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
+            ["w", "r", "r", "n", "n", "n", "n", "n", "w"],
+            ["w", "r", "r", "n", "n", "n", "n", "n", "w"],
+            ["w", "r", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "n", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "r", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "r", "w"],
+            ["w", "n", "n", "n", "n", "n", "n", "r", "w"],
+            ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
         ],
     ]
 }
